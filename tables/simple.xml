@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<node id="FPGA1">
+    
+  <node id="STUFF" address="0x40000000" mode="non-incremental" size="65536" />
+
+  <node id="SYSTEM_REGS" 				address="0x00000000" >
+    <node id="BOARD_ID" 				address="0x00000000" permission="r" >
+      <node id="CHAR4" address="0x00000000"	 mask="0xff" permission="r"/>
+      <node id="CHAR3" address="0x00000000"	 mask="0xff00" permission="r"/>
+      <node id="CHAR2" address="0x00000000"	 mask="0xff0000" permission="r"/>
+      <node id="CHAR1" address="0x00000000"	 mask="0xff000000" permission="r"/>
+    </node>
+    <node id="SYS_ID" 				address="0x00000001" permission="r">
+      <node id="CHAR4" 			mask="0xff" />
+      <node id="CHAR3" 			mask="0xff00" />
+      <node id="CHAR2" 			mask="0xff0000" />
+      <node id="CHAR1" 			mask="0xff000000" />
+    </node>                                 
+    <node id="FIRMWARE_ID" 			address="0x00000002" permission="r" >
+      <node id="DD" 			mask="0x1f"   />
+      <node id="MM" 		    mask="0x1e0" />
+      <node id="YY" 			mask="0xfe00"  />
+      <node id="VER_BUILD"   mask="0xff0000"  />
+      <node id="VER_MINOR"   mask="0xf000000"  />
+      <node id="VER_MAJOR"   mask="0xf0000000"  />
+    </node>
+  </node>
+
+</node>
+

@@ -1,0 +1,1 @@
+export BUTOOL_AUTOLOAD_LIBRARY_LIST=$BUTOOL_AUTOLOAD_LIBRARY_LIST:/home/felexc/work/ipmi/lib/libBUTool_IPMISOLDevice.so
