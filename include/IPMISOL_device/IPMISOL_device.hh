@@ -25,6 +25,9 @@ namespace BUTool{
 
   private:
     IPMISOL_Class * myIPMISOL = NULL;
+
+    // ip address to instantiate myIPMISOL                                     
+    std::string ip;
     
     //Here is where you update the map between string and function
     void LoadCommandList();
@@ -33,7 +36,7 @@ namespace BUTool{
  
     CommandReturn::status Connect(std::vector<std::string>,std::vector<uint64_t>);
     CommandReturn::status Disconnect(std::vector<std::string>,std::vector<uint64_t>);
-    CommandReturn::status talkToZynq(std::vector<std::string>,std::vector<uint64_t>);
+    CommandReturn::status SOLConsole(std::vector<std::string>,std::vector<uint64_t>);
  
     //Add new command (sub command) auto-complete files here
     std::string autoComplete_Help(std::vector<std::string> const &,std::string const &,int);

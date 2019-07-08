@@ -2,9 +2,13 @@
 #include <string.h> // strlen
 #include <unistd.h>
 #include <IPMISOL_Exceptions/IPMISOL_Exceptions.hh>
+#include <signal.h>
+#include <ncurses.h>
+//#include <termios.h>
 
 // Constructor
-IPMISOL_Class::IPMISOL_Class(std::string const & _ipmc_ip_addr) {
+IPMISOL_Class::IPMISOL_Class(std::string const & _ipmc_ip_addr):
+  solfd(-1) {
   Connect(_ipmc_ip_addr);
 }
 
@@ -17,7 +21,7 @@ IPMISOL_Class::~IPMISOL_Class() {
 // A do-it-all function to set up the SOL connection
 void IPMISOL_Class::Connect(std::string const & _ip) {
   // Always initialize non-const file descriptors as invalid
-  solfd = -1;
+  //solfd = -1;
   //  commandfd = 0;
 
   // zero out set of file descriptors
@@ -103,53 +107,77 @@ void IPMISOL_Class::configEngine(ipmiconsole_engine_config * const engine) {
   //engine->debug_flags = IPMICONSOLE_DEBUG_STDERR;
 }
 
-bool interactiveLoop;
+// For Ctrl-C handling
+//---------------------------------------------------------------------------  
+bool volatile interactiveLoop;
 
 //void IPMISOL_Class::signal_handler(int const signum) {
-/*
-void signal_handler(int const signum) {
+void static signal_handler(int const signum) {
   if(SIGINT == signum) {
     interactiveLoop = false;
   }
   return;
 }
-*/
 
-// The function where all the talking to and reading from zynq through SOL happens
-void IPMISOL_Class::talkToZynq() {
+// To catch Ctrl-C and break out of talking through SOL
+struct sigaction sa;
+// To restore old handling of Ctrl-C
+struct sigaction oldsa;
+//---------------------------------------------------------------------------  
+
+// The function where all the talking and reading through SOL happens
+void IPMISOL_Class::SOLConsole() {
   char readByte;
   char writeByte;
 
   // Instantiate sigaction struct member with signal handler function 
-  //sa.sa_handler = signal_handler;
+  sa.sa_handler = signal_handler;
   // Catch SIGINT and pass to function signal_handler within sigaction struct sa
-  //sigaction(SIGINT, &sa, &oldsa);
+  sigaction(SIGINT, &sa, &oldsa);
   interactiveLoop = true;
+
+  printf("Opening SOL comm ...\n");
+  printf("Press Ctrl-] (no -) to close\n");
+
+  //  struct termios config;                                                                         
+  //  tcgetattr(0, &config);                                                                         
+  //  config.c_lflag &= ~ICANON;                                                                     
+  //  config.c_cc[VMIN] = 1;                                                                         
+  //  tcsetattr(0, TCSANOW, &config);                                                                
+  
+  // Enable curses mode. This call is necessary before calling other ncurses functions such as cbreak(). In BUTOOL, for some reason, if only initscr() is called but cbreak() and noecho() are not, the first call to SOLConsole will act the way we want, but subsequent calls result in very weird behavior such as not recognizing the backspace key. The functionality we want with ncurses is to read characters being typed (VMIN = 1). I believe the default settings in initscr() accomplishes this. We call cbreak() to make sure we know what settings we are operating in (cbreak() also sets VMIN = 1).
+  initscr();
+  // raw() only allows Ctrl-] to break out of the loop. cbreak() allows both Ctrl-] and Ctrl-C to break.
+  // Although noecho() is called after cbreak(), I believe it is also called inside cbreak(). Source: https://utcc.utoronto.ca/~cks/space/blog/unix/CBreakAndRaw The primary reason for using cbreak() is to set VMIN = 1 as explained above.
+  cbreak();
+  noecho();
 
   while(interactiveLoop) {
     // Make a copy every time readSet is passed to pselect because pselect changes contents of fd_sets and we don't want readSet to change
     fd_set readSetCopy = readSet;
 
     int n;
-    // Block for 5 seconds or until data is available to be read from zynq or user. Not currently checking max(solfd, commandfd) because commandfd is 0
+    // Block for 5 seconds or until data is available to be read from SOL or user. Not currently checking max(solfd, commandfd) because commandfd is 0
     if((n = pselect((solfd + 1), &readSetCopy, NULL, NULL, &timeoutStruct, NULL)) > 0) {
 
       //printf("n inside is %d\n", n);
       
-      // Check if zynq is the file descriptor that is available to be read
+      // Check if SOL is the file descriptor that is available to be read
       if(FD_ISSET(solfd, &readSetCopy)) {
 	// read one byte
 	if(read(solfd, &readByte, sizeof(readByte)) < 0) {
 	  BUException::IO_ERROR e;
-	  e.Append("read error: error reading from zynq\n");
+	  e.Append("read error: error reading from SOL\n");
 	  throw e;
 	}
-	if(0x19 != readByte) {printf("%c", readByte);}
+	printf("%c", readByte);
+	// The last line does not have a newline, fflush is necessary for that last line
+	fflush(stdout);
       }
 
       // Check if user inputted command
       if(FD_ISSET(commandfd, &readSetCopy)) {
-	// read in one byte of user command and write it out to zynq
+	// read in one byte of user command and write it out to SOL
 	if(read(commandfd, &writeByte, sizeof(writeByte)) < 0) {
 	  BUException::IO_ERROR e;
 	  e.Append("read error: error reading command from stdin\n");
@@ -162,7 +190,7 @@ void IPMISOL_Class::talkToZynq() {
 	}
 	if(write(solfd, &writeByte, sizeof(writeByte)) < 0) {
 	  BUException::IO_ERROR e;
-	  e.Append("write error: error writing to zynq\n");
+	  e.Append("write error: error writing to SOL\n");
 	  throw e;
 	}
       }
@@ -171,22 +199,26 @@ void IPMISOL_Class::talkToZynq() {
   }
 
   // Restore old action of pressing Ctrl-C before returning (which is to kill the program)
-  //sigaction(SIGINT, &oldsa, NULL);
+  sigaction(SIGINT, &oldsa, NULL);
   
+  // Leave curses mode
+  endwin();
+
   return;
 }
 
 void IPMISOL_Class::shutdown() {
+  // Maybe we should catch something here. Not sure what destroy and teardown throw though.
   // Close file descriptor
   // Checkkk I think the following line would work the same
   //if(3 = ipmiconsole_ctx_status(ipmiContext) {
   if(-1 != solfd) {
     ipmiconsole_ctx_destroy(ipmiContext);
-    printf("SOL file descriptor succesfully closed\n");
-    printf("Closing SOL session ...\n");
+    solfd = -1;
+    printf("Closing SOL ...\n");
     // Non zero parameter will cause SOL sessions to be torn down cleanly
     // Will block until all active ipmi sessions cleanly closed or timed out
     ipmiconsole_engine_teardown(1);
-    printf("SOL session successfully terminated\n");   
+    printf("SOL closed\n");
    }
 }

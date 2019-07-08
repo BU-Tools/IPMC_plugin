@@ -14,15 +14,18 @@
 using namespace BUTool;
 
 IPMISOLDevice::IPMISOLDevice(std::vector<std::string> arg)
-  : CommandList<IPMISOLDevice>("IPMISOL") {
+  : CommandList<IPMISOLDevice>("IPMISOL"),
+    myIPMISOL(NULL) {
 
-  // Constructor currently does take arguments
-  if(0 != arg.size()) {
+  // Constructor currently takes exactly one argument
+  if(1 != arg.size()) {
     BUException::WRONG_ARGS_ERROR e;
-    e.Append("IPMISOLDevice takes no arguments\n");
+    e.Append("IPMISOLDevice takes exactly one argument: The IP address\n");
     throw e;
   }
   
+  ip = arg[0];
+
   //setup commands
   LoadCommandList();
 }
@@ -49,11 +52,11 @@ void IPMISOLDevice::LoadCommandList(){
 	     "  disconnect\n");
   AddCommandAlias("d","disconnect");
 
-  AddCommand("talkToZynq",&IPMISOLDevice::talkToZynq,
-	     "interact with the zynq\n" \
+  AddCommand("SOLConsole",&IPMISOLDevice::SOLConsole,
+	     "interact through SOL\n" \
 	     "Usage: \n"                \
-	     "  talkToZynq\n");
-  AddCommandAlias("t","talkToZynq");
+	     "  SOLConsole\n");
+  AddCommandAlias("sc","SOLConsole");
 }
 
 CommandReturn::status IPMISOLDevice::Connect(std::vector<std::string>,std::vector<uint64_t>) {
@@ -63,7 +66,7 @@ CommandReturn::status IPMISOLDevice::Connect(std::vector<std::string>,std::vecto
     return CommandReturn::OK;
   }
 
-  std::string ip = "192.168.20.56";
+  //  std::string ip = "192.168.20.56";
 
   try {
     myIPMISOL = new IPMISOL_Class(ip);
@@ -87,14 +90,14 @@ CommandReturn::status IPMISOLDevice::Disconnect(std::vector<std::string>,std::ve
   return CommandReturn::OK;
 }
 
-CommandReturn::status IPMISOLDevice::talkToZynq(std::vector<std::string>,std::vector<uint64_t>) {
+CommandReturn::status IPMISOLDevice::SOLConsole(std::vector<std::string>,std::vector<uint64_t>) {
 
   if(!myIPMISOL) {
     printf("ipmi SOL connection not yet established\n");
     return CommandReturn::OK;
   }
 
-  myIPMISOL->talkToZynq();
+  myIPMISOL->SOLConsole();
 
   return CommandReturn::OK;
 }

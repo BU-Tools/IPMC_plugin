@@ -3,7 +3,6 @@
 
 #include <ipmiconsole.h>
 #include <string>
-#include <signal.h>
 
 #define SOLUSERNAME "soluser"
 #define SOLPASSWORD "solpasswd"
@@ -21,8 +20,8 @@ public:
   char writeByte(char const data);
   char writeLine(std::string const & message);
 
-  // Function where all the talking to and reading from zynq throul SOL happens
-  void talkToZynq();
+  // Function where all the talking and reading through SOL happens
+  void SOLConsole();
   
   ~IPMISOL_Class();
   
@@ -45,18 +44,10 @@ private:
   // Declare a context (you get a file descriptor from the context)
   ipmiconsole_ctx_t ipmiContext;
 
-  // File descriptor to read from zynq 
+  // File descriptor to read from SOL
   int solfd;
   // File descriptor to read user commands
   int const commandfd = 0;  // Will be 0 (aka stdin)
-
-  // To break out of talking to zynq when false
-  //bool interactiveLoop;
-  
-  // To catch Ctrl-C and break out of talking to zynq
-  struct sigaction sa;
-  // To restore old handling of Ctrl-C
-  struct sigaction oldsa;
 
   // configure user info
   void configUser(ipmiconsole_ipmi_config * const user);
@@ -67,9 +58,6 @@ private:
 
   // Do it all function to set up sol connection
   void Connect(std::string const & _ip);
-
-  // Handles situation when Ctrl-C pressed while talking to Zynq
-  //void signal_handler(int const signum);
 
   // Clearly terminate SOL connection
   void shutdown();
