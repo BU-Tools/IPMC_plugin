@@ -114,6 +114,7 @@ bool volatile interactiveLoop;
 //void IPMISOL_Class::signal_handler(int const signum) {
 void static signal_handler(int const signum) {
   if(SIGINT == signum) {
+    printf("\n");
     interactiveLoop = false;
   }
   return;
@@ -137,7 +138,7 @@ void IPMISOL_Class::SOLConsole() {
   interactiveLoop = true;
 
   printf("Opening SOL comm ...\n");
-  printf("Press Ctrl-] (no -) to close\n");
+  printf("Press Ctrl-] to close\n");
 
   //  struct termios config;                                                                         
   //  tcgetattr(0, &config);                                                                         
@@ -156,11 +157,8 @@ void IPMISOL_Class::SOLConsole() {
     // Make a copy every time readSet is passed to pselect because pselect changes contents of fd_sets and we don't want readSet to change
     fd_set readSetCopy = readSet;
 
-    int n;
     // Block for 5 seconds or until data is available to be read from SOL or user. Not currently checking max(solfd, commandfd) because commandfd is 0
-    if((n = pselect((solfd + 1), &readSetCopy, NULL, NULL, &timeoutStruct, NULL)) > 0) {
-
-      //printf("n inside is %d\n", n);
+    if(pselect((solfd + 1), &readSetCopy, NULL, NULL, &timeoutStruct, NULL) > 0) {
       
       // Check if SOL is the file descriptor that is available to be read
       if(FD_ISSET(solfd, &readSetCopy)) {
@@ -185,6 +183,7 @@ void IPMISOL_Class::SOLConsole() {
 	}
 	// 29 is group separator
 	if(29 == (int)writeByte) {
+	  printf("\n");
 	  interactiveLoop = false;
 	  continue;
 	}
@@ -195,7 +194,6 @@ void IPMISOL_Class::SOLConsole() {
 	}
       }
     }
-    //printf("n is %d\n", n);
   }
 
   // Restore old action of pressing Ctrl-C before returning (which is to kill the program)
