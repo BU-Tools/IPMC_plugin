@@ -47,7 +47,12 @@ void IPMISOL_Class::Connect(std::string const & _ip) {
   ipmiconsole_ctx_t ipmiContext = ipmiconsole_ctx_create(ipmc_ip_addr.c_str(), &ipmiUser, &ipmiProtocol, &ipmiEngine);
 
   // ipmiconsole_ctx_create returns NULL on error and sets errno. Use perror to print 
-  if(NULL == ipmiContext) {perror("Error");}
+  if(NULL == ipmiContext) {
+    perror("Error");
+    BUException::CONNECT_ERROR e;
+    e.Append(ipmiconsole_ctx_errormsg(ipmiContext));
+    throw e;
+  }
 
   // Unfortunately &SOL_PAYLOAD_NUM does not work
   int num = SOL_PAYLOAD_NUM;
@@ -61,7 +66,7 @@ void IPMISOL_Class::Connect(std::string const & _ip) {
 
   // get file descriptor to talk to and read from
   solfd = ipmiconsole_ctx_fd(ipmiContext);
-
+  
   // Put file descrptor in set of descriptors to read from
   FD_SET(solfd, &readSet);
   FD_SET(commandfd, &readSet);
@@ -168,7 +173,8 @@ void IPMISOL_Class::SOLConsole() {
 	// read one byte
 	if(read(solfd, &readByte, sizeof(readByte)) < 0) {
 	  BUException::IO_ERROR e;
-	  e.Append("read error: error reading from SOL\n");
+	  //e.Append("read error: error reading from SOL\n");
+	  e.Append(strerror(errno));
 	  throw e;
 	}
 	printf("%c", readByte);
@@ -181,7 +187,8 @@ void IPMISOL_Class::SOLConsole() {
 	// read in one byte of user command and write it out to SOL
 	if(read(commandfd, &writeByte, sizeof(writeByte)) < 0) {
 	  BUException::IO_ERROR e;
-	  e.Append("read error: error reading command from stdin\n");
+	  //	  e.Append("read error: error reading command from stdin\n");
+	  e.Append(strerror(errno));
 	  throw e;
 	}
 	// 29 is group separator
@@ -192,7 +199,8 @@ void IPMISOL_Class::SOLConsole() {
 	}
 	if(write(solfd, &writeByte, sizeof(writeByte)) < 0) {
 	  BUException::IO_ERROR e;
-	  e.Append("write error: error writing to SOL\n");
+	  //	  e.Append("write error: error writing to SOL\n");
+	  e.Append(strerror(errno));
 	  throw e;
 	}
       }

@@ -33,7 +33,7 @@ IPMISOLDevice::IPMISOLDevice(std::vector<std::string> arg)
 IPMISOLDevice::~IPMISOLDevice(){
   if(myIPMISOL) {
     delete myIPMISOL;
-  }
+  } 
 }
 
   

@@ -1,4 +1,4 @@
-#include <IPMC_Exceptions/ExceptionBase.hh>
+#include <IPMISOL_Exceptions/ExceptionBase.hh>
   
 //Error string for stack string allocation error
 static const char stackError[] = "Stack allocation failed.\n";
