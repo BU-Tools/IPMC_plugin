@@ -46,6 +46,9 @@ void IPMISOL_Class::Connect(std::string const & _ip) {
   // define context
   ipmiconsole_ctx_t ipmiContext = ipmiconsole_ctx_create(ipmc_ip_addr.c_str(), &ipmiUser, &ipmiProtocol, &ipmiEngine);
 
+  // ipmiconsole_ctx_create returns NULL on error and sets errno. Use perror to print 
+  if(NULL == ipmiContext) {perror("Error");}
+
   // Unfortunately &SOL_PAYLOAD_NUM does not work
   int num = SOL_PAYLOAD_NUM;
   
