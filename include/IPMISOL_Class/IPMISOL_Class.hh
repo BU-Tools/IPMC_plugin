@@ -46,8 +46,6 @@ private:
 
   // File descriptor to read from SOL
   int solfd;
-  // File descriptor to read user commands
-  int const commandfd = 0;  // Will be 0 (aka stdin)
 
   // configure user info
   void configUser(ipmiconsole_ipmi_config * const user);

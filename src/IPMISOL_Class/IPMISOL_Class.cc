@@ -6,6 +6,8 @@
 #include <ncurses.h>
 //#include <termios.h>
 
+#define STDIN 0
+
 // Constructor
 IPMISOL_Class::IPMISOL_Class(std::string const & _ipmc_ip_addr):
   solfd(-1) {
@@ -69,7 +71,7 @@ void IPMISOL_Class::Connect(std::string const & _ip) {
   
   // Put file descrptor in set of descriptors to read from
   FD_SET(solfd, &readSet);
-  FD_SET(commandfd, &readSet);
+  FD_SET(STDIN, &readSet);
   
   int timeout = 5;
   int timer = 0;
@@ -183,9 +185,9 @@ void IPMISOL_Class::SOLConsole() {
       }
 
       // Check if user inputted command
-      if(FD_ISSET(commandfd, &readSetCopy)) {
+      if(FD_ISSET(STDIN, &readSetCopy)) {
 	// read in one byte of user command and write it out to SOL
-	if(read(commandfd, &writeByte, sizeof(writeByte)) < 0) {
+	if(read(STDIN, &writeByte, sizeof(writeByte)) < 0) {
 	  BUException::IO_ERROR e;
 	  //	  e.Append("read error: error reading command from stdin\n");
 	  e.Append(strerror(errno));
