@@ -6,6 +6,13 @@
 #include <ncurses.h>
 //#include <termios.h>
 
+#define SOLUSERNAME "soluser"
+#define SOLPASSWORD "solpasswd"
+#define K_G "root"
+
+// SOL payload instance number. Most systems support only a single instance. Some systems allow users to access multiple (meaning multiple users could then see the same serial session, for example)
+#define SOL_PAYLOAD_NUM 1
+
 #define STDIN 0
 
 // Constructor
