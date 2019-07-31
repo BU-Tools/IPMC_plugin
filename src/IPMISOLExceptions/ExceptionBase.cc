@@ -1,4 +1,4 @@
-#include <IPMISOL_Exceptions/ExceptionBase.hh>
+#include <IPMISOLExceptions/ExceptionBase.hh>
 
 //Error string for bad allocation of description
 static const char descriptionError[] = "Description allocation failed.\n";

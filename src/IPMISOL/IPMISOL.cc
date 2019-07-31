@@ -1,4 +1,4 @@
-#include <IPMISOL_Class/IPMISOL_Class.hh>
+#include <IPMISOL/IPMISOL.hh>
 #include <string.h> // strlen
 #include <unistd.h>
 #include <IPMISOL_Exceptions/IPMISOL_Exceptions.hh>
@@ -16,19 +16,19 @@
 #define STDIN 0
 
 // Constructor
-IPMISOL_Class::IPMISOL_Class(std::string const & _ipmc_ip_addr):
+IPMISOL::IPMISOL(std::string const & _ipmc_ip_addr):
   solfd(-1) {
   Connect(_ipmc_ip_addr);
 }
 
 // Deconstructor
-IPMISOL_Class::~IPMISOL_Class() {
+IPMISOL::~IPMISOL() {
   // shutdown will check if a proper connection was established and if so, terminate it
   shutdown();
 }
 
 // A do-it-all function to set up the SOL connection
-void IPMISOL_Class::Connect(std::string const & _ip) {
+void IPMISOL::Connect(std::string const & _ip) {
   // Always initialize non-const file descriptors as invalid
   //solfd = -1;
   //  commandfd = 0;
@@ -95,7 +95,7 @@ void IPMISOL_Class::Connect(std::string const & _ip) {
   }
 }
 
-void IPMISOL_Class::configUser(ipmiconsole_ipmi_config * const user) {
+void IPMISOL::configUser(ipmiconsole_ipmi_config * const user) {
   user->username = (char *)SOLUSERNAME;
   user->password = (char *)SOLPASSWORD;
   user->k_g = (unsigned char *)K_G;
@@ -105,7 +105,7 @@ void IPMISOL_Class::configUser(ipmiconsole_ipmi_config * const user) {
   user->workaround_flags = IPMICONSOLE_WORKAROUND_DEFAULT;
 }
 
-void IPMISOL_Class::configProtocol(ipmiconsole_protocol_config * const prot) {
+void IPMISOL::configProtocol(ipmiconsole_protocol_config * const prot) {
   prot->session_timeout_len = -1;
   prot->retransmission_timeout_len = -1;
   prot->retransmission_backoff_count = -1;
@@ -115,7 +115,7 @@ void IPMISOL_Class::configProtocol(ipmiconsole_protocol_config * const prot) {
   prot->maximum_retransmission_count = -1;
 }
 
-void IPMISOL_Class::configEngine(ipmiconsole_engine_config * const engine) {
+void IPMISOL::configEngine(ipmiconsole_engine_config * const engine) {
   engine->engine_flags = IPMICONSOLE_ENGINE_DEFAULT;
   //engine->engine_flags = IPMICONSOLE_ENGINE_OUTPUT_ON_SOL_ESTABLISHED;
   engine->behavior_flags = IPMICONSOLE_BEHAVIOR_DEFAULT;
@@ -128,7 +128,7 @@ void IPMISOL_Class::configEngine(ipmiconsole_engine_config * const engine) {
 //---------------------------------------------------------------------------  
 bool volatile interactiveLoop;
 
-//void IPMISOL_Class::signal_handler(int const signum) {
+//void IPMISOL::signal_handler(int const signum) {
 void static signal_handler(int const signum) {
   if(SIGINT == signum) {
     printf("\n");
@@ -144,7 +144,7 @@ struct sigaction oldsa;
 //---------------------------------------------------------------------------  
 
 // The function where all the talking and reading through SOL happens
-void IPMISOL_Class::SOLConsole() {
+void IPMISOL::SOLConsole() {
   char readByte;
   char writeByte;
 
@@ -225,7 +225,7 @@ void IPMISOL_Class::SOLConsole() {
   return;
 }
 
-void IPMISOL_Class::shutdown() {
+void IPMISOL::shutdown() {
   // Maybe we should catch something here. Not sure what destroy and teardown throw though.
   // Close file descriptor
   // Checkkk I think the following line would work the same

@@ -14,7 +14,7 @@
 #include <iostream>
 #include <fstream>
 
-#include <IPMISOL_Class/IPMISOL_Class.hh>
+#include <IPMISOL/IPMISOL.hh>
 
 namespace BUTool{
   
@@ -24,7 +24,7 @@ namespace BUTool{
     ~IPMISOLDevice();
 
   private:
-    IPMISOL_Class * myIPMISOL = NULL;
+    IPMISOL * myIPMISOL = NULL;
 
     // ip address to instantiate myIPMISOL                                     
     std::string ip;

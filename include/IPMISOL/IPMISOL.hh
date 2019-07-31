@@ -1,12 +1,12 @@
-#ifndef __IPMISOL_CLASS_HH__
-#define __IPMISOL_CLASS_HH__
+#ifndef __IPMISOL_HH__
+#define __IPMISOL_HH__
 
 #include <ipmiconsole.h>
 #include <string>
 
-class IPMISOL_Class {
+class IPMISOL {
 public:
-  IPMISOL_Class(std::string const & _ipmc_ip_addr);
+  IPMISOL(std::string const & _ipmc_ip_addr);
 
   char readByte();
   //std::string readLine();
@@ -16,7 +16,7 @@ public:
   // Function where all the talking and reading through SOL happens
   void SOLConsole();
   
-  ~IPMISOL_Class();
+  ~IPMISOL();
   
 private:
 

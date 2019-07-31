@@ -1,4 +1,4 @@
-#include "IPMISOL_device/IPMISOL_device.hh"
+#include "IPMISOLDevice/IPMISOLDevice.hh"
 //#include <BUException/ExceptionBase.hh>
 #include <IPMISOL_Exceptions/IPMISOL_Exceptions.hh>
 #include <boost/regex.hpp>
@@ -69,7 +69,7 @@ CommandReturn::status IPMISOLDevice::Connect(std::vector<std::string>,std::vecto
   //  std::string ip = "192.168.20.56";
 
   try {
-    myIPMISOL = new IPMISOL_Class(ip);
+    myIPMISOL = new IPMISOL(ip);
   } catch(BUException::CONNECT_ERROR & e) {
     throw e;
   }
