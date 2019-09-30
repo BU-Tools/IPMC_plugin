@@ -15,6 +15,11 @@
 
 #define STDIN 0
 
+// check if the version is less than 1.2.2, i.e whether it has ipmiconsole_ctx_set_config()
+#if FREEIPMI_PACKAGE_VERSION_MAJOR == 0 || (FREEIPMI_PACKAGE_VERSION_MAJOR == 1 && FREEIPMI_PACKAGE_VERSION_MINOR < 2) || ( FREEIPMI_PACKAGE_VERSION_MAJOR == 1 && FREEIPMI_PACKAGE_VERSION_MINOR == 2 && FREEIPMI_PACKAGE_VERSION_PATCH < 2 )
+#define VERSION_TOO_OLD
+#endif
+
 // Constructor
 IPMISOL::IPMISOL(std::string const & _ipmc_ip_addr):
   solfd(-1) {
@@ -63,11 +68,12 @@ void IPMISOL::Connect(std::string const & _ip) {
     throw e;
   }
 
+  // Configure context if version is up to date 
+  #ifndef VERSION_TOO_OLD
   // Unfortunately &SOL_PAYLOAD_NUM does not work
   int num = SOL_PAYLOAD_NUM;
-  
-  // Configure context
   ipmiconsole_ctx_set_config(ipmiContext, IPMICONSOLE_CTX_CONFIG_OPTION_SOL_PAYLOAD_INSTANCE, (void *)&num);
+  #endif
 
   // Submit context to engine
   // returns 0 on success. No callback function (2nd arg) or callback parameters (3rd arg)
