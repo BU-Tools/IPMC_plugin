@@ -1,3 +1,4 @@
+SHELL=bash
 PackagePath = $(shell pwd)
 
 

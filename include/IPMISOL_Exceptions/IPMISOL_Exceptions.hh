@@ -1,7 +1,7 @@
 #ifndef __EXCEPTIONHANDLER_HPP__
 #define __EXCEPTIONHANDLER_HPP__
 
-#include "ExceptionBase.hh"
+#include <BUException/ExceptionBase.hh>
 
 namespace BUException {
   ExceptionClassGenerator(BAD_COMMAND_ERROR,"Bad command.\n")
