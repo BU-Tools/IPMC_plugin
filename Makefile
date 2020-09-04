@@ -30,6 +30,7 @@ LIBRARIES =    	-lToolException	\
 		-lboost_regex
 
 
+INSTALL_PATH ?= ./install
 
 
 CPP_FLAGS = -std=c++11 -g -O3 -rdynamic -Wall -MMD -MP -fPIC ${INCLUDE_PATH} -Werror -Wno-literal-suffix
@@ -63,6 +64,12 @@ ${LIBRARY_IPMISOL}: ${LIBRARY_IPMISOL_OBJECT_FILES}
 	g++ ${LINK_LIBRARY_FLAGS}  ${LIBRARY_IPMISOL_OBJECT_FILES} -lipmiconsole -o $@
 
 
+# -----------------------
+# install
+# -----------------------
+install: all
+	 install -m 775 -d ${INSTALL_PATH}/lib
+	 install -b -m 775 ./lib/* ${INSTALL_PATH}/lib
 
 #	g++ ${LINK_LIBRARY_FLAGS} $^ -o $@
 

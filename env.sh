@@ -1,1 +1,0 @@
-export BUTOOL_AUTOLOAD_LIBRARY_LIST=$BUTOOL_AUTOLOAD_LIBRARY_LIST:/home/dan/work/BUTool/IPMC_plugin/lib/libBUTool_IPMISOLDevice.so
