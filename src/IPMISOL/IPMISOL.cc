@@ -133,12 +133,28 @@ void IPMISOL::configEngine(ipmiconsole_engine_config * const engine) {
 // For Ctrl-C handling
 //---------------------------------------------------------------------------  
 bool volatile interactiveLoop;
+bool volatile ctrl_C_exit;
+bool volatile sendCtrlC;
 
-//void IPMISOL::signal_handler(int const signum) {
+//CTRL_C_TIMESCALE in seconds
+#define CTRL_C_TIMESCALE 1
 void static signal_handler(int const signum) {
   if(SIGINT == signum) {
-    printf("\n");
-    interactiveLoop = false;
+    // for the user to hit ctrl-C twice in CTRL_C_TIMESCALE seconds to quit
+    if( ctrl_C_exit){
+      //Second ctrl-C in CTRL_C_TIMESCALE seconds, end interactive session
+      printf("\n");
+      interactiveLoop = false;
+    }else{
+      //first ctrl-C, next one ends interactive session
+      ctrl_C_exit = true;
+      //Set an alarm for CTRL_C_TIMESCALE second from now to time-out first ctrl-C
+      alarm(CTRL_C_TIMESCALE);
+      //send ctrl C to the socket if it exists
+      sendCtrlC = true;
+    }
+  }else if(SIGALRM == signum){
+    ctrl_C_exit = false;
   }
   return;
 }
@@ -158,6 +174,7 @@ void IPMISOL::SOLConsole() {
   sa.sa_handler = signal_handler;
   // Catch SIGINT and pass to function signal_handler within sigaction struct sa
   sigaction(SIGINT, &sa, &oldsa);
+  sigaction(SIGALRM,&sa,NULL);
   interactiveLoop = true;
 
   printf("Opening SOL comm ...\n");
@@ -179,6 +196,12 @@ void IPMISOL::SOLConsole() {
   while(interactiveLoop) {
     // Make a copy every time readSet is passed to pselect because pselect changes contents of fd_sets and we don't want readSet to change
     fd_set readSetCopy = readSet;
+
+    if(sendCtrlC){
+      sendCtrlC = false;
+      writeByte = 3;
+      write(solfd, &writeByte, sizeof(writeByte));
+    }
 
     // Block for 5 seconds or until data is available to be read from SOL or user. Not currently checking max(solfd, commandfd) because commandfd is 0
     if(pselect((solfd + 1), &readSetCopy, NULL, NULL, &timeoutStruct, NULL) > 0) {
